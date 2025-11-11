@@ -59,18 +59,41 @@ void InitLines(){
 }
 
 void GeneratePassword(user *prsnptr){
-    char password[8];
-    int min_namelen = 4;
-    if( strlen(prsnptr->name) < 4 )
-        min_namelen=strlen(prsnptr->name) ;
-    strncpy(password , prsnptr->name , 4);
-    srand(time(NULL));
-    int n = (rand() % 900) + 100 ;
-    
-    sprintf(password+min_namelen , "%d" , n);
-    password[min_namelen+3] = '\0' ; 
 
-    strcpy(prsnptr->passwd , password);
+    srand(time(NULL));
+    char password[8];
+    int min_namelen = strlen(prsnptr->name);
+    if( min_namelen > 4 )
+        min_namelen=4;
+    strncpy(password , prsnptr->name , 4);
+
+    while(1){
+        //genrating num for password i.e name(4) + num(3)
+        int n = (rand() % 900) + 100 ;
+        sprintf(password+min_namelen , "%d" , n); //sprintf(& , fs , value);
+        password[min_namelen+3] = '\0' ;
+
+        //check for exisiting password
+        char stored_name[50] , stored_passwd[50] , stored_key[50] ;
+        FILE *fptr = fopen("users.txt", "r");
+        if (fptr != NULL){
+            int found = 0 ;
+            while ( fscanf(fptr, "%s %s %s", stored_user, stored_passwd, stored_key) != EOF) {
+                if (strcmp(password, stored_passwd) == 0) {
+                    found=1;
+                    fclose(fptr);
+                    break;
+                }
+            } 
+            if (found==1)
+                continue;
+        }    
+
+        //confirm password
+        fclose(fptr);
+        strcpy(prsnptr->passwd , password);
+        break;
+    }
 }
 
 void DisplayPage(){
@@ -113,13 +136,13 @@ void CreateAccount(){
 
     printf("\nEnter Your Username (without spaces) : ");
     scanf("%s",prsnptr->name); 
+    strupr(prsnptr->name);
     printf("Enter Your Encryption Key (eg: LEMON) : ");
     scanf("%s",prsnptr->key);
+    strupr(prsnptr->key);
 
     GeneratePassword(prsnptr);
-    strupr(prsnptr->name);
     strupr(prsnptr->passwd);
-    strupr(prsnptr->key);
     printf("\npYOUR PASSWORD IS : %s\n\n",prsnptr->passwd);
 
     FILE *fptr = fopen("UsersInfo.txt","a");
