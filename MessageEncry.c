@@ -20,7 +20,7 @@ void GeneratePassword(user *prsnptr);
 void CreateAccount(user *prsnptr);
 int LoginAccount(user *prsnptr);
 int CheckPassword(user *prsnptr , char password[] , char purpose[]);
-
+int PersonScreen(user *prsnptr);
 
 int main(){
     
@@ -46,10 +46,10 @@ int main(){
 
         if (command==1) {
             CreateAccount(prsnptr);
-            printf("Prnding");
+            PersonScreen(prsnptr);
         }
         else if (command==2){
-            if (LoginAccount(prsnptr)) { printf("Pending\n"); }
+            if (LoginAccount(prsnptr)) { PersonScreen(prsnptr); }
         }
         else if (command==3) {
             printf("\n\nAPPERICIATE YOUR TIME VIEWING OUR PROGRAM 🥰🥰\nTHANK YOU!!!");
@@ -183,3 +183,18 @@ int CheckPassword(user *prsnptr , char password[] , char purpose[]){
     return 0;
 }
 
+int PersonScreen(user *prsnptr){
+    
+    int command ;
+    char *MenuItems[] = {
+        "WELCOME TO YOUR DASHBOARD",
+        "1. SEND A MESSAGE",
+        "2. VIEW YOUR MESSAGES",
+        "3. DELETE A MESSAGE",
+        "4. LOGOUT",
+        "ENTER YOUR COMMAND : "
+    };
+
+    DisplayPage(MenuItems , 6);
+    scanf("%d",&command);
+}
