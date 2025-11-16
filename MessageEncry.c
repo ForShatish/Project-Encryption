@@ -51,7 +51,10 @@ int main(){
             PersonScreen(prsnptr);
         }
         else if (command==2){
-            if (LoginAccount(prsnptr)) { PersonScreen(prsnptr); }
+            if (LoginAccount(prsnptr)) {
+                printf("\n\n"); 
+                PersonScreen(prsnptr); 
+            }
         }
         else if (command==3) {
             printf("\n\nAPPERICIATE YOUR TIME VIEWING OUR PROGRAM 🥰🥰\nTHANK YOU!!!");
@@ -104,7 +107,7 @@ void GeneratePassword(user *prsnptr){
     char password[8];
     int min_namelen = strlen(prsnptr->name);
     if ( min_namelen > 4 ) { min_namelen=4; }
-    strncpy(password , prsnptr->name , 4);
+    strncpy(password , prsnptr->name , min_namelen);
 
     while(1){
         //genrating num for password i.e name(4) + num(3)
