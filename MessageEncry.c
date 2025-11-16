@@ -3,6 +3,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <windows.h>
+#include <ctype.h>
 
 typedef struct UserInfo {
     char name[50];
@@ -21,6 +22,7 @@ void CreateAccount(user *prsnptr);
 int LoginAccount(user *prsnptr);
 int CheckPassword(user *prsnptr , char password[] , char purpose[]);
 int PersonScreen(user *prsnptr);
+int EncrypDecryp(char purpose[], char key[], char message[]);
 
 int main(){
     
@@ -136,7 +138,7 @@ void CreateAccount(user *prsnptr){
     printf("\nYOUR PASSWORD IS : %s\n\n",prsnptr->passwd);
 
     FILE *fptr = fopen("UsersInfo.txt","a");
-    fprintf(fptr , "%s %s %s\n" , prsnptr->name , prsnptr->passwd , prsnptr->key);
+    fprintf(fptr , "%s : %s : %s\n" , prsnptr->name , prsnptr->passwd , prsnptr->key);
     fclose(fptr);
 
     printf("\t\t\t\t  %s\n\n",equal_line);
@@ -156,28 +158,25 @@ int LoginAccount(user *prsnptr){
     strupr(prsnptr->passwd);
     if (CheckPassword(prsnptr,prsnptr->passwd,"Login")) { return 1; }
 
-    printf("\n😭😭 OOPS!!! YOUR ENTERED PASSWORD DOESNT EXIST WITH OUR CURRENT DATABASE\nPLESAE TRY AGAIN.\n\n");
+    printf("\n😭😭 OOPS!!! YOUR ENTERED PASSWORD DOESNT EXIST IN OUR CURRENT DATABASE\nPLESAE TRY AGAIN.\n\n");
     return 0;
 }
 
 int CheckPassword(user *prsnptr , char password[] , char purpose[]){
 
     char stored_name[50] , stored_passwd[50] , stored_key[50] ;
-    FILE *fptr = fopen("usersInfo.txt", "r");
+    FILE *fptr = fopen("UsersInfo.txt", "r");
     if (fptr != NULL){
-        int found = 0 ;
-        while ( fscanf(fptr, "%s %s %s", stored_name, stored_passwd, stored_key) != EOF) {
+        while ( fscanf(fptr, "%s : %s : %s", stored_name, stored_passwd, stored_key) != EOF) {
             if (strcmp(password, stored_passwd) == 0) {
                 if (strcmp("Login",purpose) == 0) {
                     strcpy(prsnptr->name , stored_name);
                     strcpy(prsnptr->key , stored_key);
                 }
-                found=1;
                 fclose(fptr);
-                break;
+                return 1; 
             }
         } 
-        if (found == 1){ return 1; }
     }    
     fclose(fptr);
     return 0;
@@ -195,6 +194,92 @@ int PersonScreen(user *prsnptr){
         "ENTER YOUR COMMAND : "
     };
 
-    DisplayPage(MenuItems , 6);
-    scanf("%d",&command);
+    while (1){
+        DisplayPage(MenuItems , 6);
+        scanf("%d",&command);
+
+        int buffclr;
+        while((buffclr = getchar()) != '\n' && buffclr != EOF);
+
+        if (command == 1){
+            char message[150];
+            printf("\n\nWrite Your Message From Here : ");
+            fgets(message,150,stdin);
+
+            time_t now = time(NULL);
+            struct tm *t = localtime(&now);
+            char date[11] , time[9] ;
+            sprintf(date , "%02d-%02d-%04d" , t->tm_mday,t->tm_mon+1,t->tm_year+1900);
+            sprintf(time , "%02d:%02d:%02d" , t->tm_hour,t->tm_min,t->tm_sec);
+            EncrypDecryp("Encryp",prsnptr->key,message);
+
+            FILE *fptr = fopen("Message.txt","a");
+            fprintf(fptr , "%s : %s : %s : %s" , prsnptr->passwd,date,time,message);
+            fclose(fptr);
+
+            printf("\n\t\t\t\t  %s\n\n",equal_line);
+            printf("\t\t\t\t\t\tMESSAGE ADDED SUCCESSFULLY\n\n");
+            printf("\t\t\t\t  %s\n\n",equal_line);
+        }
+        else if ( command == 2){
+            FILE *fptr = fopen("Message.txt","r");
+            if (fptr==NULL){ 
+                printf("\n\n😅😅 OOPS!!! LOOK LIKE YOU HAVENT ENTERD A MESSAGE YET.\n\n");
+                continue ;
+            }
+            char passwd[50] , date[11] , time[9] , msg[150] ;
+            while(fscanf(fptr, "%s : %s : %s : %[^\n]", passwd,date,time,msg) != EOF){
+                if(strcmp(prsnptr->passwd,passwd)==0){
+                    printf("\n\nDate : %s\nTime : %s\n\nEncrypted message :  %s",date,time,msg);
+
+                    char key[50] ;
+                    printf("\n\nEnter Your Key To Decrypt : ");
+                    scanf("%s",key);
+
+                    if (strcmpi(key,prsnptr->key)==0){
+                        printf("\nDecrypted message : ");
+                        EncrypDecryp("Decryp",key,msg);
+                        printf("\n\n");
+                        continue ;
+                    }
+                    break;
+                }
+            }
+        }
+        else if ( command == 3){
+            printf("Pending");
+        }
+        else if ( command == 4) {
+            break;
+        }
+        else {
+            printf("\n\n😭😭 OOPS!!! LOOK LIKE YOU HAVE ENTERED SOMETHING WRONG.\nPLEASE PICK ONE FROM THE LISTED OPTIONS!!!\n\n");
+        }
+    }
 }
+
+int EncrypDecryp(char purpose[], char key[], char message[]){
+
+    int key_len = strlen(key);
+    int msg_len = strlen(message);
+    strupr(key);
+    for(int i=0 ; i<msg_len ; i++){
+        if (isalpha(message[i])){
+            int c_index = (toupper(message[i]) - 'A');
+            char key_char = key[i%key_len];
+            int k_index = (key_char-'A');
+
+            if(strcmp(purpose,"Encryp") == 0){
+                char encry_c = ((c_index + k_index) % 26) + 'A' ;
+                message[i]=(message[i]>='a' && message[i]<='z') ? tolower(encry_c) : encry_c ;  
+            }
+            else{
+                char decry_c = ((c_index - k_index + 26) % 26) + 'A';  
+                printf("%c", (message[i] >= 'a' && message[i] <= 'z') ? tolower(decry_c) : decry_c);
+            }
+        }
+        else if (strcmp(purpose,"Decryp") == 0){ printf("%c",message[i]);}
+    }
+
+}
+ 
