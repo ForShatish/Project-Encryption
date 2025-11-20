@@ -146,9 +146,7 @@ void CreateAccount(user *prsnptr){
 
     printf("\t\t\t\t  %s\n\n",equal_line);
     printf("\t\t\t\t\t YOUR ACCOUNT IS CREATED SUCCESSFULLY\n\n");
-    printf("\t\t\t\t  %s\n\n",equal_line);
-  
-}
+    printf("\t\t\t\t  %s\n\n",equal_line);}
 
 int LoginAccount(user *prsnptr){
 
@@ -192,13 +190,12 @@ int PersonScreen(user *prsnptr){
         "WELCOME TO YOUR DASHBOARD",
         "1. SEND A MESSAGE",
         "2. VIEW YOUR MESSAGES",
-        "3. DELETE A MESSAGE",
-        "4. LOGOUT",
+        "3. LOGOUT",
         "ENTER YOUR COMMAND : "
     };
 
     while (1){
-        DisplayPage(MenuItems , 6);
+        DisplayPage(MenuItems , 5);
         scanf("%d",&command);
 
         int buffclr;
@@ -250,9 +247,6 @@ int PersonScreen(user *prsnptr){
             }
         }
         else if ( command == 3){
-            printf("Pending");
-        }
-        else if ( command == 4) {
             break;
         }
         else {
@@ -286,3 +280,13 @@ int EncrypDecryp(char purpose[], char key[], char message[]){
 
 }
  
+
+
+
+
+
+
+
+
+
+
